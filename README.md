@@ -73,7 +73,7 @@ Completed indexing in 5.386 seconds
 Search completed in 0.4 seconds
 Search results (top 10 out of 0):
 > search child-like
-Search completed in 2.8 seconds
+Search completed in 2.1 seconds
 Search results (top 10 out of 15):
 * folder7/Document10926.txt:4
 * folder3/Document10379.txt:3
@@ -99,7 +99,7 @@ Search results (top 10 out of 27):
 * folder8/Document11159.txt:1
 * folder8/Document11154.txt:1
 > search moon AND vortex
-Search completed in 2.8 seconds
+Search completed in 3.8 seconds
 Search results (top 10 out of 19):
 * folder5/folderB/Document10706.txt:26
 * folder4/Document10681.txt:19
@@ -149,7 +149,7 @@ Completed indexing in 5.386 seconds
 Search completed in 0.4 seconds
 Search results (top 10 out of 0):
 > search child-like
-Search completed in 2.8 seconds
+Search completed in 2.1 seconds
 Search results (top 10 out of 15):
 * folder7/Document10926.txt:4
 * folder3/Document10379.txt:3
@@ -175,7 +175,7 @@ Search results (top 10 out of 27):
 * folder8/Document11159.txt:1
 * folder8/Document11154.txt:1
 > search moon AND vortex
-Search completed in 2.8 seconds
+Search completed in 3.8 seconds
 Search results (top 10 out of 19):
 * folder5/folderB/Document10706.txt:26
 * folder4/Document10681.txt:19
