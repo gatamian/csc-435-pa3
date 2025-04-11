@@ -60,7 +60,7 @@ public class ProcessingEngine {
         return result;
     }
     
-    public SearchResult searchFiles(ArrayList<String> terms) {
+    public SearchResult search(ArrayList<String> terms) {
         SearchResult result = new SearchResult(0.0, new ArrayList<DocPathFreqPair>());
         // TO-DO get the start time
         // TO-DO for each term get the pairs of documents and frequencies from the index store
