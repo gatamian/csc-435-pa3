@@ -9,7 +9,7 @@ IndexResult ProcessingEngine::indexFolder(std::string folderPath) {
     // TO-DO crawl the folder path and extrac all file paths
     // TO-DO create the worker threads and give to each worker thread a subset of the documents that need to be indexed
     // TO-DO for each file put the document path in the index store and retrieve the document number
-    // TO-DO for each file extract all valid words/terms and count their frequencies
+    // TO-DO for each file extract all words/terms and count their frequencies
     // TO-DO increment the total number of read bytes
     // TO-DO update the main index with the word frequencies for each document
     // TO-DO join all of the worker threads
