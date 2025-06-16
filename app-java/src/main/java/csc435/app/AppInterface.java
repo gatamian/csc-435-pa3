@@ -28,17 +28,28 @@ public class AppInterface {
             
             // if the command begins with index, index the files from the specified directory
             if (command.length() >= 5 && command.substring(0, 5).compareTo("index") == 0) {
-                // TO-DO parse command and call indexFolder on the processing engine
-                // TO-DO print the execution time and the total number of bytes read
+                String path = command.substring(6).trim();
+                IndexResult result = engine.indexFolder(path);
+                System.out.printf("index finished in %.3f seconds, %d bytes read.\n",result.executionTime,result.totalBytesRead);
                 continue;
+
             }
 
             // if the command begins with search, search for files that matches the query
             if (command.length() >= 6 && command.substring(0, 6).compareTo("search") == 0) {
-                // TO-DO parse command and call search on the processing engine
-                // TO-DO print the execution time and the top 10 search results
-                continue;
+                String[] words = command.substring(7).trim().split("\\s+AND\\s+|\\s+");  
+                ArrayList<String> terms = new ArrayList<>();    
+                for (String term : words) {
+                    if (!term.isEmpty()) terms.add((term));
+                    }
+                SearchResult result = engine.search(terms);
+                System.out.printf("search finished in %.3f seconds. \n",result.excutionTime);
+                for (DocPathFreqPair p : result.documentFrequencies){
+                    System.out.printf("Document: %s, Frequency: %d\n", p.documentPath, p.wordFrequency);
+                }
             }
+            // TO-DO print the execution time and the top 10 search results quit
+            
 
             System.out.println("unrecognized command!");
         }
