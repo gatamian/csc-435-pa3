@@ -1,6 +1,20 @@
 package csc435.app;
 
 import java.util.ArrayList;
+import java.lang.reflect.Array;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
+import java.lang.Comparable;
+import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.Collections;
+import java.util.concurrent.locks.ReentrantLock;
 
 class IndexResult {
     public double executionTime;
@@ -32,6 +46,31 @@ class SearchResult {
     }
 }
 
+class Worker implements Runnable {
+    private String folderPath;
+    private IndexStore store;
+    private ArrayList<String> filePaths;
+
+    public Worker(String folderPath, IndexStore store, ArrayList<String> filePaths) {
+        this.folderPath = folderPath;
+        this.store = store;
+        this.filePaths = filePaths;
+    }
+
+    @Override
+    public void run() {
+        HashMap<String, Long> wordFrequencies = new HashMap<>();
+        long totalBytesRead = 0;
+
+        for (String filePath : filePaths) {
+            long docLength = wordFreq(filePath, wordFrequencies);
+            totalBytesRead += docLength;
+            long docNumber = store.putDocument(filePath);
+            store.updateIndex(docNumber, wordFrequencies);
+        }
+    }
+}
+
 public class ProcessingEngine {
     // keep a reference to the index store
     private IndexStore store;
@@ -43,11 +82,72 @@ public class ProcessingEngine {
         this.store = store;
         this.numWorkerThreads = numWorkerThreads;
     }
+    /**
+     * This method reads the content of a document, extracts all words/terms, and counts their frequencies.
+     * It uses a regular expression to match words and ignores words that are less than or equal to 3 characters.
+     * The word frequencies are stored in the provided HashMap.
+     *
+     * @param documString the path to the document
+     * @param wf          the HashMap to store word frequencies
+     * @return the length of the document content
+     */
+    
 
+    private long wordFreq(String documString, HashMap<String , Long> wf){
+        String content = "";
+        try {
+            content = Files.readString(Path.of(documString));
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            System.err.println("File not found or Could not open " + documString);
+        }
+        String reg = "[a-zA-Z_0-9\\-]+";
+        Pattern p = Pattern.compile(reg);
+        Matcher m = p.matcher(content);
+
+        while(m.find()){
+            String word = m.group();
+            //System.out.println(word);
+            if(word.length() <= 3){
+                continue;
+            }
+            
+            if(wf.containsKey(word)){
+                wf.put(word, wf.get(word) + 1);
+            }
+            else{
+                wf.put(word, 1L);
+            }
+        }
+
+        for(Map.Entry<String,Long> entry : wf.entrySet()){
+            System.out.println(entry.getKey() + " " + entry.getValue());
+            break;
+        }
+        return content.length();
+    } 
     public IndexResult indexFiles(String folderPath) {
         IndexResult result = new IndexResult(0.0, 0);
-        // TO-DO get the start time
-        // TO-DO crawl the folder path and extrac all file paths
+        long excStartTime = System.currentTimeMillis();
+        ArrayList<String> filePath = new ArrayList<String>();
+        Stack<File> s = new Stack<File>();
+        s.add(new File(folderPath));
+
+        while (!s.empty()){
+            File file = s.pop();
+            if (file.isDirectory()){
+                for(File f : file.listFiles()){
+                    s.add(f);
+                }
+            }
+            else{
+                filePath.add(file.getAbsolutePath());
+            }
+        }
+        
+        // TO-DO get the start time:DONE
+        // TO-DO crawl the folder path and extrac all file paths:DONE
         // TO-DO create the worker threads and give to each worker a subset of the documents that need to be indexed
         // TO-DO for each file put the document path in the index store and retrieve the document number
         // TO-DO for each file extract all words/terms and count their frequencies

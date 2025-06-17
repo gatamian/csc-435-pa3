@@ -2,9 +2,10 @@ package csc435.app;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 // Data structure that stores a document number and the number of time a word/term appears in the document
-class DocFreqPair {
+class DocFreqPair implements Comparable<DocFreqPair>{
     public long documentNumber;
     public long wordFrequency;
 
@@ -12,14 +13,25 @@ class DocFreqPair {
         this.documentNumber = documentNumber;
         this.wordFrequency = wordFrequency;
     }
+
+        @Override
+    public int compareTo(DocFreqPair d){
+         return (int)(this.wordFrequency - d.wordFrequency);
+    }
 }
 
 public class IndexStore {
+    ArrayList<String> docMap;
+    HashMap<String,ArrayList<DocFreqPair>> invertedIndex;
+    
+    
     // TO-DO declare data structure that keeps track of the DocumentMap
     // TO-DO declare data structures that keeps track of the TermInvertedIndex
     // TO-DO declare two locks, one for the DocumentMap and one for the TermInvertedIndex
 
     public IndexStore() {
+        this.docMap = new ArrayList<String>();
+        this. invertedIndex = new HashMap<>();
         // TO-DO initialize the DocumentMap and TermInvertedIndex members
     }
 
