@@ -26,6 +26,7 @@ class IndexResult {
     }
 }
 
+
 class DocPathFreqPair {
     public String documentPath;
     public long wordFrequency;
@@ -46,30 +47,30 @@ class SearchResult {
     }
 }
 
-class Worker implements Runnable {
-    private String folderPath;
-    private IndexStore store;
-    private ArrayList<String> filePaths;
+// class Worker implements Runnable {
+//     private String folderPath;
+//     private IndexStore store;
+//     private ArrayList<String> filePaths;
 
-    public Worker(String folderPath, IndexStore store, ArrayList<String> filePaths) {
-        this.folderPath = folderPath;
-        this.store = store;
-        this.filePaths = filePaths;
-    }
+//     public Worker(String folderPath, IndexStore store, ArrayList<String> filePaths) {
+//         this.folderPath = folderPath;
+//         this.store = store;
+//         this.filePaths = filePaths;
+//     }
 
-    @Override
-    public void run() {
-        HashMap<String, Long> wordFrequencies = new HashMap<>();
-        long totalBytesRead = 0;
+//     @Override
+//     public void run() {
+//         HashMap<String, Long> wordFrequencies = new HashMap<>();
+//         long totalBytesRead = 0;
 
-        for (String filePath : filePaths) {
-            long docLength = wordFreq(filePath, wordFrequencies);
-            totalBytesRead += docLength;
-            long docNumber = store.putDocument(filePath);
-            store.updateIndex(docNumber, wordFrequencies);
-        }
-    }
-}
+//         for (String filePath : filePaths) {
+//             long docLength = wordFreq(filePath, wordFrequencies);
+//             totalBytesRead += docLength;
+//             long docNumber = store.putDocument(filePath);
+//             store.updateIndex(docNumber, wordFrequencies);
+//         }
+//     }
+// }
 
 public class ProcessingEngine {
     // keep a reference to the index store
@@ -82,6 +83,9 @@ public class ProcessingEngine {
         this.store = store;
         this.numWorkerThreads = numWorkerThreads;
     }
+
+
+
     /**
      * This method reads the content of a document, extracts all words/terms, and counts their frequencies.
      * It uses a regular expression to match words and ignores words that are less than or equal to 3 characters.
@@ -162,6 +166,39 @@ public class ProcessingEngine {
     
     public SearchResult search(ArrayList<String> terms) {
         SearchResult result = new SearchResult(0.0, new ArrayList<DocPathFreqPair>());
+
+        long excStartTime = System.currentTimeMillis();
+        ArrayList<ArrayList<DocFreqPair>> individualResults = new ArrayList<>();
+        ArrayList<DocFreqPair> tempResults = new ArrayList<>();
+        ArrayList<DocFreqPair> finalResults = new ArrayList<>();
+        for(String term:terms){
+            ArrayList<DocFreqPair> doc = store.lookupIndex(term);
+            individualResults.add(doc);
+
+        }
+
+        tempResults.addAll(individualResults.get(0));
+        finalResults = tempResults;
+        for(int i=1;i<individualResults.size();i++){
+            finalResults = new ArrayList<>();
+            for(DocFreqPair d:tempResults){
+                for(DocFreqPair d2:individualResults.get(i)){
+                    if(d.documentNumber == d2.documentNumber){
+                        finalResults.add(new DocFreqPair(d.documentNumber,d.wordFrequency + d2.wordFrequency));
+                    }
+                }
+            }
+            tempResults=finalResults;
+        }
+
+        
+        Collections.sort(finalResults);
+        ArrayList<DocPathFreqPair> aa = new ArrayList<DocPathFreqPair>();
+        for(DocFreqPair d:finalResults){
+            aa.add(new DocPathFreqPair(store.getDocument(d.documentNumber),d.wordFrequency));
+        }
+        System.out.println(aa.size());
+        SearchResult result = new SearchResult(System.currentTimeMillis()-excStartTime, aa);
         // TO-DO get the start time
         // TO-DO for each term get the pairs of documents and frequencies from the index store
         // TO-DO combine the returned documents and frequencies from all of the specified terms
