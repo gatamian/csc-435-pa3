@@ -23,6 +23,8 @@ class DocFreqPair implements Comparable<DocFreqPair>{
 public class IndexStore {
     ArrayList<String> docMap;
     HashMap<String,ArrayList<DocFreqPair>> invertedIndex;
+    ReentrantLock docMapLock = new ReentrantLock();
+    ReentrantLock invertedIndexLock = new ReentrantLock();
     
     
     // TO-DO declare data structure that keeps track of the DocumentMap
@@ -37,6 +39,20 @@ public class IndexStore {
 
     public long putDocument(String documentPath) {
         long documentNumber = 0;
+        docMapLock.lock();
+        try {
+            // TO-DO check if the document path already exists in the DocumentMap
+            for (int i = 0; i < docMap.size(); i++) {
+                if (docMap.get(i).equals(documentPath)) {
+                    return i; // Return the existing document number
+                }
+            }       
+            // If it does not exist, add the document path to the DocumentMap
+            documentNumber = docMap.size(); // The new document number is the current size of the DocumentMap
+            docMap.add(documentPath);
+        } finally {
+            docMapLock.unlock();
+        }
         // TO-DO assign a unique number to the document path and return the number
         // IMPORTANT! you need to make sure that only one thread at a time can access this method
 
@@ -51,14 +67,57 @@ public class IndexStore {
     }
 
     public void updateIndex(long documentNumber, HashMap<String, Long> wordFrequencies) {
+        invertedIndexLock.lock();
+        try {       
+            // TO-DO update the TermInvertedIndex with the word frequencies of the specified document
+            for (Map.Entry<String, Long> entry : wordFrequencies.entrySet()) {
+                String key = mapElement.getKey();
+                long value = mapElement.getValue();
+
+            if(!invertedIndex.containsKey(key)){
+                invertedIndex.put(key,new ArrayList<DocFreqPair>());
+            }
+
+            ArrayList<DocFreqPair> d = invertedIndex.get(key);
+            d.add(new DocFreqPair(documentNumber,value));
+            }
+/*                 String term = entry.getKey();
+                long frequency = entry.getValue();
+                
+                // Get or create the list of DocFreqPair for this term
+                ArrayList<DocFreqPair> docFreqPairs = invertedIndex.getOrDefault(term, new ArrayList<>());
+                
+                // Add or update the document frequency pair
+                boolean found = false;
+                for (DocFreqPair pair : docFreqPairs) {
+                    if (pair.documentNumber == documentNumber) {
+                        pair.wordFrequency += frequency; // Update frequency if document already exists
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    docFreqPairs.add(new DocFreqPair(documentNumber, frequency)); // Add new pair
+                }
+                
+                invertedIndex.put(term, docFreqPairs); // Update the inverted index */
+            }
+        finally {
+            invertedIndexLock.unlock();
+        }
+
         // TO-DO update the TermInvertedIndex with the word frequencies of the specified document
         // IMPORTANT! you need to make sure that only one thread at a time can access this method
     }
 
     public ArrayList<DocFreqPair> lookupIndex(String term) {
         ArrayList<DocFreqPair> results = new ArrayList<>();
+                if(invertedIndex.containsKey(term)){
+            results = invertedIndex.get(term);
+        }
         // TO-DO return the document and frequency pairs for the specified term
 
         return results;
-    }
-}
+  }
+}   
+
