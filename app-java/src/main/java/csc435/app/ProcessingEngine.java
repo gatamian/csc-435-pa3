@@ -84,7 +84,65 @@ public class ProcessingEngine {
         this.numWorkerThreads = numWorkerThreads;
     }
 
+    class Queue
+    {
+        public ArrayDeque<String> deque;
+        public ReentrantLock lock;
 
+        public Queue() {
+            deque = new ArrayDeque<String>();
+            lock = new ReentrantLock();
+        }
+    }
+
+        class Worker implements Runnable
+    {
+        IndexStore store;
+        Queue queue;
+        public long totalBytesRead = 0;
+
+        public Worker(Queue queue,IndexStore store) {
+            this.store = store;
+            this.queue = queue;
+        }
+
+        // Function that will be run by each worker thread
+        @Override
+        public void run() {
+            String docPath;
+            HashMap<String,Long> wf = new HashMap<>();
+            
+            // Run tasks until the worker thread reads a termination task
+            while (true) {
+                docPath = "###";
+                
+                // Pop an element from the queue, if the queue has elements in it
+                queue.lock.lock();
+                if (queue.deque.size() >= 1) {
+                    docPath = queue.deque.remove();
+                }
+                queue.lock.unlock();
+                
+                // If the queue was empty, then try again
+                if (docPath == "###") {
+                    continue;
+                }
+                
+                // If the task is a terminate task, then finish worker thread execution
+                if (docPath == "$$$") {
+                    break;
+                }
+                
+                // Run the task
+                long docID = store.putDocument(docPath);
+                System.out.println("File Path:" + docPath + "Doc ID:" + docID + "/n");
+                totalBytesRead = totalBytesRead + wordFreq(docPath, wf);
+                store.updateIndex(docID,wf);
+                wf.clear();
+
+            }
+        }
+    }
 
     /**
      * This method reads the content of a document, extracts all words/terms, and counts their frequencies.
@@ -131,6 +189,8 @@ public class ProcessingEngine {
         }
         return content.length();
     } 
+
+    
     public IndexResult indexFiles(String folderPath) {
         IndexResult result = new IndexResult(0.0, 0);
         long excStartTime = System.currentTimeMillis();
@@ -149,6 +209,45 @@ public class ProcessingEngine {
                 filePath.add(file.getAbsolutePath());
             }
         }
+
+        Queue queue = new Queue();
+        ArrayList<Thread> threads = new ArrayList<Thread>();
+        ArrayList<Worker> workers = new ArrayList<Worker>();
+
+
+        for (int i = 0; i < numWorkerThreads; i++) {
+            Worker worker = new Worker(queue, store);
+            Thread thread = new Thread(worker);
+            threads.add(thread);
+            workers.add(worker);
+            thread.start();
+        }
+        for (String f: filePath){
+            queue.lock.lock();
+            queue.deque.add(f);
+            queue.lock.unlock();
+        }
+
+        for (int i = 0; i < numWorkerThreads; i++) {
+            queue.lock.lock();
+            queue.deque.add("$$$"); // Add termination task for each worker
+            queue.lock.unlock();
+        }
+
+        for (int i = 0; i < numWorkerThreads; i++) {
+            try {
+                threads.get(i).join();
+                results.totalBytesRead += workers.get(i).totalBytesRead;
+            } 
+
+            catch (InterruptedException e) {
+                System.err.println("Could not join thread!");
+            }
+        }
+
+        long excEndTime = System.currentTimeMillis();
+        result.executionTime = (excEndTime - excStartTime) / 1000.0;
+
         
         // TO-DO get the start time:DONE
         // TO-DO crawl the folder path and extrac all file paths:DONE
