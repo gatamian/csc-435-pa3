@@ -4,7 +4,7 @@ public class FileRetrievalEngine
 {
     public static void main(String[] args)
     {
-        int numWorkerThreads = 1;
+        int numWorkerThreads = args[0] != null ? Integer.parseInt(args[0]) : 1; // Default to 1 if no argument is provided
 
         // TO-DO initialize the number of worker threads from args[0]
         
