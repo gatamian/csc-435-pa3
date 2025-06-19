@@ -15,6 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Collections;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.ArrayDeque;
 
 class IndexResult {
     public double executionTime;
@@ -47,30 +48,6 @@ class SearchResult {
     }
 }
 
-// class Worker implements Runnable {
-//     private String folderPath;
-//     private IndexStore store;
-//     private ArrayList<String> filePaths;
-
-//     public Worker(String folderPath, IndexStore store, ArrayList<String> filePaths) {
-//         this.folderPath = folderPath;
-//         this.store = store;
-//         this.filePaths = filePaths;
-//     }
-
-//     @Override
-//     public void run() {
-//         HashMap<String, Long> wordFrequencies = new HashMap<>();
-//         long totalBytesRead = 0;
-
-//         for (String filePath : filePaths) {
-//             long docLength = wordFreq(filePath, wordFrequencies);
-//             totalBytesRead += docLength;
-//             long docNumber = store.putDocument(filePath);
-//             store.updateIndex(docNumber, wordFrequencies);
-//         }
-//     }
-// }
 
 public class ProcessingEngine {
     // keep a reference to the index store
@@ -95,7 +72,7 @@ public class ProcessingEngine {
         }
     }
 
-        class Worker implements Runnable
+    class Worker implements Runnable
     {
         IndexStore store;
         Queue queue;
@@ -192,7 +169,7 @@ public class ProcessingEngine {
 
     
     public IndexResult indexFiles(String folderPath) {
-        IndexResult result = new IndexResult(0.0, 0);
+        IndexResult results = new IndexResult(0.0, 0);
         long excStartTime = System.currentTimeMillis();
         ArrayList<String> filePath = new ArrayList<String>();
         Stack<File> s = new Stack<File>();
@@ -246,7 +223,7 @@ public class ProcessingEngine {
         }
 
         long excEndTime = System.currentTimeMillis();
-        result.executionTime = (excEndTime - excStartTime) / 1000.0;
+        results.executionTime = (excEndTime - excStartTime) / 1000.0;
 
         
         // TO-DO get the start time:DONE
@@ -260,7 +237,7 @@ public class ProcessingEngine {
         // TO-DO get the stop time and calculate the execution time
         // TO-DO return the execution time and the total number of bytes read
 
-        return result;
+        return results;
     }
     
     public SearchResult search(ArrayList<String> terms) {
@@ -297,7 +274,7 @@ public class ProcessingEngine {
             aa.add(new DocPathFreqPair(store.getDocument(d.documentNumber),d.wordFrequency));
         }
         System.out.println(aa.size());
-        SearchResult result = new SearchResult(System.currentTimeMillis()-excStartTime, aa);
+        SearchResult results = new SearchResult(System.currentTimeMillis()-excStartTime, aa);
         // TO-DO get the start time
         // TO-DO for each term get the pairs of documents and frequencies from the index store
         // TO-DO combine the returned documents and frequencies from all of the specified terms
@@ -306,6 +283,6 @@ public class ProcessingEngine {
         // TO-DO get the stop time and calculate the execution time
         // TO-DO return the execution time and the top 10 documents and frequencies
 
-        return result;
+        return results;
     }
 }

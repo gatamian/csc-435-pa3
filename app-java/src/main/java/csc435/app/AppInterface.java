@@ -2,7 +2,7 @@ package csc435.app;
 
 import java.lang.System;
 import java.util.Scanner;
-
+import java.util.ArrayList;
 public class AppInterface {
     private ProcessingEngine engine;
 
@@ -29,7 +29,7 @@ public class AppInterface {
             // if the command begins with index, index the files from the specified directory
             if (command.length() >= 5 && command.substring(0, 5).compareTo("index") == 0) {
                 String path = command.substring(6).trim();
-                IndexResult result = engine.indexFolder(path);
+                IndexResult result = engine.indexFiles(path);
                 System.out.printf("index finished in %.3f seconds, %d bytes read.\n",result.executionTime,result.totalBytesRead);
                 continue;
 

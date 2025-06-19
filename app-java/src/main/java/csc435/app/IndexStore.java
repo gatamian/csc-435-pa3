@@ -1,8 +1,20 @@
 package csc435.app;
 
 import java.util.ArrayList;
+import java.lang.reflect.Array;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.lang.Comparable;
+import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.Collections;
+import java.util.concurrent.locks.ReentrantLock;
 
 // Data structure that stores a document number and the number of time a word/term appears in the document
 class DocFreqPair implements Comparable<DocFreqPair>{
@@ -71,8 +83,8 @@ public class IndexStore {
         try {       
             // TO-DO update the TermInvertedIndex with the word frequencies of the specified document
             for (Map.Entry<String, Long> entry : wordFrequencies.entrySet()) {
-                String key = mapElement.getKey();
-                long value = mapElement.getValue();
+                String key = entry.getKey();
+                long value = entry.getValue();
 
             if(!invertedIndex.containsKey(key)){
                 invertedIndex.put(key,new ArrayList<DocFreqPair>());
